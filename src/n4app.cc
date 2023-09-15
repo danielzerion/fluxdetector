@@ -80,21 +80,24 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
 
 // ANCHOR: my_geometry
 auto my_geometry(const my& my) {
-  auto r_bub = my.bubble_radius;
-  auto r_str = my.straw_radius;
-  auto water  = n4::material("G4_WATER");
+// heavy water                                                                                                                
+G4int ncomponents, natoms;
+G4Element* H  = new G4Element("TS_H_of_Water" ,"H" , 1., 1.0079*g/mole);
+G4Element* O  = new G4Element("Oxygen"        ,"O" , 8., 16.00*g/mole);
+G4Isotope* H2 = new G4Isotope("H2",1,2);
+G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
+D->AddIsotope(H2, 100*perCent);
+G4Material* D2O = new G4Material("D2O", 1.107*g/cm3, ncomponents=2,
+                       kStateLiquid, 293.15*kelvin, 1*atmosphere);
+D2O->AddElement(D, natoms=2);
+D2O->AddElement(O, natoms=1);
+//  auto D2O = nain4::material_from_elements_N("D2O", 1.107*g/cm3, kStateLiquid,
+//					    // temp = 293.15*kelvin
+//					    // pressure = 1*atmosphere
+//					    {{"D", 2}, {"O", 1}});
   auto air    = n4::material("G4_AIR");
-  auto steel  = n4::material("G4_STAINLESS-STEEL");
-  auto world  = n4::box("world").cube(2*m).x(3*m).volume(water);
-
-  n4::sphere("bubble").r(r_bub)         .place(air).in(world).at  (1.3*m, 0.8*m, 0.3*m).now();
-  n4::tubs  ("straw" ).r(r_str).z(1.9*m).place(air).in(world).at_x(0.2*m              ).now();
-
-  n4       ::sphere("socket-cap" ).r(0.3*m).phi_delta(180*deg)
-    .sub(n4::box   ("socket-hole").cube(0.4*m))
-    .name("socket")
-    .place(steel).in(world).rotate_x(my.socket_rot).at(1*m, 0, 0.7*m).now();
-
+  auto world  = n4::box("World").cube(2*m).x(3*m).volume(air);
+  auto det    = n4::tubs("Detector").r(0.56*m).z(1*m).place(D2O).in(world).rotate_x(90*deg).now();
   return n4::place(world).now();
 }
 // ANCHOR_END: my_geometry
