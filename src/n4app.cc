@@ -5,6 +5,8 @@
 
 #include <G4GenericMessenger.hh>
 
+#include <G4ParticleDefinition.hh>
+#include <G4ParticleGun.hh>
 #include <G4PrimaryParticle.hh>
 #include <G4String.hh>
 #include <G4SystemOfUnits.hh>   // physical units such as `m` for metre
@@ -14,8 +16,8 @@
 #include <FTFP_BERT.hh>         // our choice of physics list
 #include <G4RandomDirection.hh> // for launching particles in random directions
 
-
 #include <G4ThreeVector.hh>
+#include <Randomize.hh>
 #include <cstdlib>
 
 void verify_number_of_args(int argc){
@@ -27,25 +29,35 @@ void verify_number_of_args(int argc){
 }
 
 struct my {
+  G4double lab_size = 3*m;
+  G4double detector_length = 1*m;
+  G4double detector_radius = 56*cm;
+  std::unique_ptr<G4ParticleGun> gun;
+  size_t particles_per_event = 100;
+
+  // G4ParticleDefinition*      nu_e  = n4::find_particle(      "nu_e");
+  // G4ParticleDefinition* anti_nu_mu = n4::find_particle("anti_nu_mu");
+  // G4ParticleDefinition*      nu_mu = n4::find_particle(     "nu_mu");
   G4double       straw_radius{0.1 * m};
   G4double      bubble_radius{0.2 * m};
   G4double      socket_rot   {-90 * deg};
-  G4String      particle_name{"geantino"};
   G4double      particle_energy{511 * keV};
   G4ThreeVector particle_dir {};
 };
 
-auto my_generator(const my& my) {
+auto my_generator(my& my) {
+  my.gun.reset(new G4ParticleGun{});
   return [&](G4Event* event) {
-    auto particle_type = n4::find_particle(my.particle_name);
-    auto vertex = new G4PrimaryVertex();
-    auto r = my.particle_dir.mag2() > 0 ? my.particle_dir : G4RandomDirection();
-    vertex -> SetPrimary(new G4PrimaryParticle(
-                           particle_type,
-                           r.x(), r.y(), r.z(),
-                           my.particle_energy
-                         ));
-    event  -> AddPrimaryVertex(vertex);
+    //auto particle_type = n4::find_particle("nu_e");
+    for (size_t i=0; i<my.particles_per_event; i++) {
+      G4double x = my.lab_size * (G4UniformRand() - 0.5);
+      G4double y = my.lab_size * (G4UniformRand() - 0.5);
+      my.gun -> GeneratePrimaryVertex(event);
+      my.gun -> SetParticlePosition({x, y, -my.lab_size/2});
+      my.gun -> SetParticleEnergy(30 * MeV);
+      my.gun -> SetParticleMomentumDirection({0,0,1});
+      my.gun -> GeneratePrimaryVertex(event);
+    }
   };
 }
 
@@ -53,7 +65,7 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
   auto my_stepping_action = [&] (const G4Step* step) {
     auto pt = step -> GetPreStepPoint();
     auto volume_name = pt -> GetTouchable() -> GetVolume() -> GetName();
-    if (volume_name == "straw" || volume_name == "bubble") {
+    if (volume_name == "Detector") {
       auto pos = pt -> GetPosition();
       std::cout << volume_name << " " << pos << std::endl;
     }
@@ -82,13 +94,13 @@ auto my_geometry(const my& my) {
     {{D, 2}, {"O", 1}});
 
   auto air    = n4::material("G4_AIR");
-  auto world  = n4::box("World").cube(2*m).x(3*m).volume(air);
-  auto det    = n4::tubs("Detector").r(0.56*m).z(1*m).place(D2O).in(world).rotate_x(90*deg).now();
+  auto world  = n4::box("World").cube(my.lab_size).volume(air);
+  auto det    = n4::tubs("Detector").r(my.detector_radius).z(my.detector_length).place(D2O).in(world).rotate_x(90*deg).now();
   return n4::place(world).now();
 }
 
 int main(int argc, char* argv[]) {
-    unsigned n_event = 0;
+  unsigned n_event = 0;
 
   my my;
 
@@ -99,7 +111,6 @@ int main(int argc, char* argv[]) {
   messenger -> DeclarePropertyWithUnit("bubble_radius"     , "m"  , my.bubble_radius  );
   messenger -> DeclarePropertyWithUnit("socket_rot"        , "deg", my.socket_rot     );
   messenger -> DeclarePropertyWithUnit("particle_energy"   , "keV", my.particle_energy);
-  messenger -> DeclareProperty        ("particle"          ,        my.particle_name  );
   messenger -> DeclareProperty        ("particle_direction",        my.particle_dir   );
 
     n4::run_manager::create()
