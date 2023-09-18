@@ -52,9 +52,8 @@ auto my_generator(my& my) {
   return [nu = std::move(nu), pick = std::move(pick), &my](G4Event* event) {
     for (G4int i=0; i<my.particles_per_event; i++) {
       my.gun -> SetParticleDefinition(nu[pick()]);
-      G4double x = my.lab_size * (G4UniformRand() - 0.5);
-      G4double y = my.lab_size * (G4UniformRand() - 0.5);
-      my.gun -> SetParticlePosition({x, y, -my.lab_size/2});
+      auto rand = [&my] { return n4::random::uniform(-my.lab_size/2, my.lab_size/2); };
+      my.gun -> SetParticlePosition({rand(), rand(), -my.lab_size/2});
       my.gun -> SetParticleEnergy(30 * MeV);
       my.gun -> SetParticleMomentumDirection({0,0,1});
       my.gun -> GeneratePrimaryVertex(event);
