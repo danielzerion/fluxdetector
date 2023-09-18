@@ -54,7 +54,7 @@ auto my_generator(my& my) {
   auto pick = n4::random::biased_choice{weights};
 
   return [nu = std::move(nu), pick = std::move(pick), &my](G4Event* event) {
-    for (size_t i=0; i<my.particles_per_event; i++) {
+    for (G4int i=0; i<my.particles_per_event; i++) {
       my.gun -> SetParticleDefinition(nu[pick()]);
       G4double x = my.lab_size * (G4UniformRand() - 0.5);
       G4double y = my.lab_size * (G4UniformRand() - 0.5);
