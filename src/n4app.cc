@@ -33,12 +33,11 @@ struct my {
   G4double detector_length = 1*m;
   G4double detector_radius = 56*cm;
   std::unique_ptr<G4ParticleGun> gun;
-  size_t particles_per_event = 100;
+  G4int particles_per_event = 1000;
 
   // G4ParticleDefinition*      nu_e  = n4::find_particle(      "nu_e");
   // G4ParticleDefinition* anti_nu_mu = n4::find_particle("anti_nu_mu");
   // G4ParticleDefinition*      nu_mu = n4::find_particle(     "nu_mu");
-  G4double       straw_radius{0.1 * m};
   G4double      bubble_radius{0.2 * m};
   G4double      socket_rot   {-90 * deg};
   G4double      particle_energy{511 * keV};
@@ -107,11 +106,11 @@ int main(int argc, char* argv[]) {
   // The trailing slash after '/my_geometry' is CRUCIAL: without it, the
   // messenger violates the principle of least surprise.
   auto messenger = new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"};
-  messenger -> DeclarePropertyWithUnit("straw_radius"      , "m"  , my. straw_radius  );
   messenger -> DeclarePropertyWithUnit("bubble_radius"     , "m"  , my.bubble_radius  );
   messenger -> DeclarePropertyWithUnit("socket_rot"        , "deg", my.socket_rot     );
   messenger -> DeclarePropertyWithUnit("particle_energy"   , "keV", my.particle_energy);
-  messenger -> DeclareProperty        ("particle_direction",        my.particle_dir   );
+  messenger -> DeclareProperty("n_particles_per_event", my.particles_per_event);
+  messenger -> DeclareProperty("particle_direction"   , my.particle_dir       );
 
     n4::run_manager::create()
     .ui("my-program-name", argc, argv)
