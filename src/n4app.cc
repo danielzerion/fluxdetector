@@ -1,6 +1,7 @@
 #include "nain4.hh"
 #include "g4-mandatory.hh"
 #include "n4_ui.hh"
+#include "n4-utils.hh"
 #include "n4-volumes.hh"
 
 #include <G4GenericMessenger.hh>
@@ -43,13 +44,18 @@ struct my {
 
 auto my_generator(my& my) {
   my.gun.reset(new G4ParticleGun{});
-  my.gun -> SetParticleDefinition(n4::find_particle("nu_e"));
-  // n4::find_particle(      "nu_e");
-  // n4::find_particle("anti_nu_mu");
-  // n4::find_particle(     "nu_mu");
-  return [&](G4Event* event) {
-    //auto particle_type = n4::find_particle("nu_e");
+  std::vector<G4ParticleDefinition*> nu {
+      n4::find_particle(     "nu_e"),
+      n4::find_particle(     "nu_mu"),
+      n4::find_particle("anti_nu_mu")
+  };
+
+  std::vector<G4double> weights{1,2,3};
+  auto pick = n4::random::biased_choice{weights};
+
+  return [nu = std::move(nu), pick = std::move(pick), &my](G4Event* event) {
     for (size_t i=0; i<my.particles_per_event; i++) {
+      my.gun -> SetParticleDefinition(nu[pick()]);
       G4double x = my.lab_size * (G4UniformRand() - 0.5);
       G4double y = my.lab_size * (G4UniformRand() - 0.5);
       my.gun -> GeneratePrimaryVertex(event);
