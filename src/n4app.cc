@@ -1,5 +1,3 @@
-// ANCHOR: full_file
-// ANCHOR: includes
 #include "nain4.hh"
 #include "g4-mandatory.hh"
 #include "n4_ui.hh"
@@ -19,9 +17,7 @@
 
 #include <G4ThreeVector.hh>
 #include <cstdlib>
-// ANCHOR_END: includes
 
-// ANCHOR: print_usage
 void verify_number_of_args(int argc){
   if (argc != 2) {
     std::cerr << "Wrong number of arguments: " << argc
@@ -29,7 +25,6 @@ void verify_number_of_args(int argc){
     std::exit(EXIT_FAILURE);
   }
 }
-// ANCHOR_END: print_usage
 
 struct my {
   G4double       straw_radius{0.1 * m};
@@ -40,7 +35,6 @@ struct my {
   G4ThreeVector particle_dir {};
 };
 
-// ANCHOR: my_generator
 auto my_generator(const my& my) {
   return [&](G4Event* event) {
     auto particle_type = n4::find_particle(my.particle_name);
@@ -54,9 +48,7 @@ auto my_generator(const my& my) {
     event  -> AddPrimaryVertex(vertex);
   };
 }
-// ANCHOR_END: my_generator
 
-// ANCHOR: create_actions
 n4::actions* create_actions(my& my, unsigned& n_event) {
   auto my_stepping_action = [&] (const G4Step* step) {
     auto pt = step -> GetPreStepPoint();
@@ -76,9 +68,7 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
  -> set( (new n4::   event_action{                  }) -> end(my_event_action) )
  -> set(  new n4::stepping_action{my_stepping_action});
 }
-// ANCHOR_END: create_actions
 
-// ANCHOR: my_geometry
 auto my_geometry(const my& my) {
   auto r_bub = my.bubble_radius;
   auto r_str = my.straw_radius;
@@ -97,12 +87,9 @@ auto my_geometry(const my& my) {
 
   return n4::place(world).now();
 }
-// ANCHOR_END: my_geometry
 
-// ANCHOR: pick_cli_arguments
 int main(int argc, char* argv[]) {
-  // ANCHOR_END: pick_cli_arguments
-  unsigned n_event = 0;
+    unsigned n_event = 0;
 
   my my;
 
@@ -116,8 +103,7 @@ int main(int argc, char* argv[]) {
   messenger -> DeclareProperty        ("particle"          ,        my.particle_name  );
   messenger -> DeclareProperty        ("particle_direction",        my.particle_dir   );
 
-  // ANCHOR: create_run_manager
-  n4::run_manager::create()
+    n4::run_manager::create()
     .ui("my-program-name", argc, argv)
     .macro_path("macs")
     .apply_command("/my/straw_radius 0.5 m")
@@ -135,17 +121,4 @@ int main(int argc, char* argv[]) {
     // .apply_command(...) // also possible after apply_late_macro
 
     .run();
-
-
-  // ANCHOR_END: create_run_manager
-
-  // ANCHOR: build_minimal_framework
-  // Important! physics list has to be set before the generator!
-  // ANCHOR_END: build_minimal_framework
-
-  // ANCHOR: run
-  // ANCHOR_END: run
-// ANCHOR: closing_bracket
 }
-// ANCHOR_END: closing_bracket
-// ANCHOR_END: full_file
