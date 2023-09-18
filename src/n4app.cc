@@ -70,24 +70,28 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
 }
 
 auto my_geometry(const my& my) {
-// heavy water                                                                                                                
-G4int ncomponents, natoms;
-G4Element* H  = new G4Element("TS_H_of_Water" ,"H" , 1., 1.0079*g/mole);
-G4Element* O  = new G4Element("Oxygen"        ,"O" , 8., 16.00*g/mole);
-G4Isotope* H2 = new G4Isotope("H2",1,2);
-G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
-D->AddIsotope(H2, 100*perCent);
-G4Material* D2O = new G4Material("D2O", 1.107*g/cm3, ncomponents=2,
-                       kStateLiquid, 293.15*kelvin, 1*atmosphere);
-D2O->AddElement(D, natoms=2);
-D2O->AddElement(O, natoms=1);
-//  auto D2O = nain4::material_from_elements_N("D2O", 1.107*g/cm3, kStateLiquid,
-//					    // temp = 293.15*kelvin
-//					    // pressure = 1*atmosphere
-//					    {{"D", 2}, {"O", 1}});
+
+  // Pure Geant4 definition of heavy water
+  // G4int ncomponents, natoms;
+  // G4Element* H  = new G4Element("TS_H_of_Water" ,"H" , 1., 1.0079*g/mole);
+  // G4Element* O  = new G4Element("Oxygen"        ,"O" , 8., 16.00*g/mole);
+  G4Isotope* H2 = new G4Isotope("H2",1,2);
+  G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
+  D->AddIsotope(H2, 100*perCent);
+  // G4Material* D2O = new G4Material("D2O", 1.107*g/cm3, ncomponents=2,
+  //                                  kStateLiquid, 293.15*kelvin, 1*atmosphere);
+  // D2O->AddElement(D, natoms=2);
+  // D2O->AddElement(O, natoms=1);
+
+  // Working towards a nain4 definition of heavy water
+  auto D2O_new = nain4::material_from_elements_N(
+    "D2O", 1.107*g/cm3,
+    {.state=kStateLiquid, .temp=293.15*kelvin, .pressure = 1*atmosphere},
+    {{D, 2}, {"O", 1}});
+
   auto air    = n4::material("G4_AIR");
   auto world  = n4::box("World").cube(2*m).x(3*m).volume(air);
-  auto det    = n4::tubs("Detector").r(0.56*m).z(1*m).place(D2O).in(world).rotate_x(90*deg).now();
+  auto det    = n4::tubs("Detector").r(0.56*m).z(1*m).place(D2O_new).in(world).rotate_x(90*deg).now();
   return n4::place(world).now();
 }
 
