@@ -54,7 +54,6 @@ auto my_generator(my& my) {
       my.gun -> SetParticleDefinition(nu[pick()]);
       G4double x = my.lab_size * (G4UniformRand() - 0.5);
       G4double y = my.lab_size * (G4UniformRand() - 0.5);
-      my.gun -> GeneratePrimaryVertex(event);
       my.gun -> SetParticlePosition({x, y, -my.lab_size/2});
       my.gun -> SetParticleEnergy(30 * MeV);
       my.gun -> SetParticleMomentumDirection({0,0,1});
