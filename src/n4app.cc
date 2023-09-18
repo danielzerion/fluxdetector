@@ -35,9 +35,6 @@ struct my {
   std::unique_ptr<G4ParticleGun> gun;
   G4int particles_per_event = 1000;
 
-  // G4ParticleDefinition*      nu_e  = n4::find_particle(      "nu_e");
-  // G4ParticleDefinition* anti_nu_mu = n4::find_particle("anti_nu_mu");
-  // G4ParticleDefinition*      nu_mu = n4::find_particle(     "nu_mu");
   G4double      bubble_radius{0.2 * m};
   G4double      socket_rot   {-90 * deg};
   G4double      particle_energy{511 * keV};
@@ -46,6 +43,10 @@ struct my {
 
 auto my_generator(my& my) {
   my.gun.reset(new G4ParticleGun{});
+  my.gun -> SetParticleDefinition(n4::find_particle("nu_e"));
+  // n4::find_particle(      "nu_e");
+  // n4::find_particle("anti_nu_mu");
+  // n4::find_particle(     "nu_mu");
   return [&](G4Event* event) {
     //auto particle_type = n4::find_particle("nu_e");
     for (size_t i=0; i<my.particles_per_event; i++) {
