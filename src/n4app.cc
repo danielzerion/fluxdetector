@@ -30,16 +30,12 @@ void verify_number_of_args(int argc){
 }
 
 struct my {
-  G4double lab_size = 3*m;
-  G4double detector_length = 1*m;
-  G4double detector_radius = 56*cm;
-  std::unique_ptr<G4ParticleGun> gun;
+  G4double lab_size        =  3    * m;
+  G4double detector_length =  1    * m;
+  G4double detector_radius =  0.56 * m;
+  G4double particle_energy = 30    * MeV;
   G4int particles_per_event = 1000;
-
-  G4double      bubble_radius{0.2 * m};
-  G4double      socket_rot   {-90 * deg};
-  G4double      particle_energy{511 * keV};
-  G4ThreeVector particle_dir {};
+  std::unique_ptr<G4ParticleGun> gun;
 };
 
 auto my_generator(my& my) {
@@ -110,14 +106,12 @@ int main(int argc, char* argv[]) {
 
   my my;
 
-  // The trailing slash after '/my_geometry' is CRUCIAL: without it, the
-  // messenger violates the principle of least surprise.
+  // The trailing slash after '/my' is CRUCIAL: without it, the messenger
+  // violates the principle of least surprise.
   auto messenger = new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"};
-  messenger -> DeclarePropertyWithUnit("bubble_radius"     , "m"  , my.bubble_radius  );
-  messenger -> DeclarePropertyWithUnit("socket_rot"        , "deg", my.socket_rot     );
-  messenger -> DeclarePropertyWithUnit("particle_energy"   , "keV", my.particle_energy);
+  messenger -> DeclarePropertyWithUnit("lab_size"       , "m"  , my.lab_size  );
+  messenger -> DeclarePropertyWithUnit("particle_energy", "MeV", my.particle_energy);
   messenger -> DeclareProperty("n_particles_per_event", my.particles_per_event);
-  messenger -> DeclareProperty("particle_direction"   , my.particle_dir       );
 
     n4::run_manager::create()
     .ui("fluxdetector", argc, argv)
