@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
   messenger -> DeclareProperty("particle_direction"   , my.particle_dir       );
 
     n4::run_manager::create()
-    .ui("my-program-name", argc, argv)
+    .ui("fluxdetector", argc, argv)
     .macro_path("macs")
     .apply_command("/my/straw_radius 0.5 m")
     .apply_early_macro("early-hard-wired.mac")
