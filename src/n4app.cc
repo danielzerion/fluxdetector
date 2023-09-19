@@ -39,23 +39,18 @@ struct my {
 };
 
 auto my_generator(my& my) {
-  my.gun.reset(new G4ParticleGun{});
-  std::vector<G4ParticleDefinition*> nu {
-      n4::find_particle(     "nu_e"),
-      n4::find_particle(     "nu_mu"),
-      n4::find_particle("anti_nu_mu")
-  };
+  my.gun.reset(new G4ParticleGun{n4::find_particle("e-")});
 
-  std::vector<G4double> weights{1,2,3};
-  auto pick = n4::random::biased_choice{weights};
-
-  return [nu = std::move(nu), pick = std::move(pick), &my](G4Event* event) {
+  return [&my](G4Event* event) {
     for (G4int i=0; i<my.particles_per_event; i++) {
-      my.gun -> SetParticleDefinition(nu[pick()]);
-      auto rand = [&my] { return n4::random::uniform(-my.lab_size/2, my.lab_size/2); };
-      my.gun -> SetParticlePosition({rand(), rand(), -my.lab_size/2});
+      auto random_position_in_detector = [&my] {
+        auto [x, y] = n4::random::random_on_disc(my.detector_radius);
+        auto z = n4::random::uniform(-my.detector_length/2, my.detector_length/2);
+        return G4ThreeVector{x,y,z};
+      };
+      my.gun -> SetParticlePosition(random_position_in_detector());
       my.gun -> SetParticleEnergy(30 * MeV);
-      my.gun -> SetParticleMomentumDirection({0,0,1});
+      my.gun -> SetParticleMomentumDirection(G4RandomDirection());
       my.gun -> GeneratePrimaryVertex(event);
     }
   };
