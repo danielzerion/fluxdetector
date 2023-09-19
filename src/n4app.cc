@@ -34,25 +34,26 @@ struct my {
   G4double detector_length =  1    * m;
   G4double detector_radius =  0.56 * m;
   G4double particle_energy = 30    * MeV;
-  G4int particles_per_event = 1000;
   std::unique_ptr<G4ParticleGun> gun;
+  G4String particle = "e-";
 };
 
 auto my_generator(my& my) {
-  my.gun.reset(new G4ParticleGun{n4::find_particle("e-")});
+  my.gun.reset(new G4ParticleGun{n4::find_particle(my.particle)});
 
-  return [&my](G4Event* event) {
-    for (G4int i=0; i<my.particles_per_event; i++) {
-      auto random_position_in_detector = [&my] {
-        auto [x, y] = n4::random::random_on_disc(my.detector_radius);
-        auto z = n4::random::uniform(-my.detector_length/2, my.detector_length/2);
-        return G4ThreeVector{x,y,z};
-      };
-      my.gun -> SetParticlePosition(random_position_in_detector());
-      my.gun -> SetParticleEnergy(30 * MeV);
-      my.gun -> SetParticleMomentumDirection(G4RandomDirection());
-      my.gun -> GeneratePrimaryVertex(event);
-    }
+  return [&my](G4Event *event) {
+    auto random_position_in_detector = [&my] {
+      auto [x, z] = n4::random::random_on_disc(my.detector_radius);
+      auto y      = n4::random::uniform(
+        -my.detector_length / 2,
+         my.detector_length / 2
+      );
+      return G4ThreeVector{x, y, z};
+    };
+    my.gun->SetParticlePosition(random_position_in_detector());
+    my.gun->SetParticleEnergy(my.particle_energy);
+    my.gun->SetParticleMomentumDirection(G4RandomDirection());
+    my.gun->GeneratePrimaryVertex(event);
   };
 }
 
@@ -62,7 +63,8 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
     auto volume_name = pt -> GetTouchable() -> GetVolume() -> GetName();
     if (volume_name == "Detector") {
       auto pos = pt -> GetPosition();
-      std::cout << volume_name << " " << pos << std::endl;
+      auto p = step -> GetTrack() -> GetParticleDefinition() -> GetParticleName();
+      std::cout << "pos: " << pos << "   " << p << std::endl;
     }
   };
 
@@ -103,8 +105,10 @@ int main(int argc, char* argv[]) {
   // violates the principle of least surprise.
   auto messenger = new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"};
   messenger -> DeclarePropertyWithUnit("lab_size"       , "m"  , my.lab_size  );
+  messenger -> DeclarePropertyWithUnit("detector_radius", "m"  , my.detector_radius);
+  messenger -> DeclarePropertyWithUnit("detector_length", "m"  , my.detector_length);
   messenger -> DeclarePropertyWithUnit("particle_energy", "MeV", my.particle_energy);
-  messenger -> DeclareProperty("n_particles_per_event", my.particles_per_event);
+  messenger -> DeclareProperty("particle", my.particle);
 
     n4::run_manager::create()
     .ui("fluxdetector", argc, argv)

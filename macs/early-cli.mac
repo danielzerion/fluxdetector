@@ -1,2 +1,4 @@
-/my/n_particles_per_event 10
 /my/lab_size 1.5 m
+#/my/particle proton
+#/my/detector_radius 0.9 m
+#/my/detector_length 20 cm
