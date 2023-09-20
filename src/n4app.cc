@@ -80,6 +80,7 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
  -> set(  new n4::stepping_action{my_stepping_action});
 }
 
+// TODO: we haven't used this at all yet, but the reflection already works!
 void place_D2O_teflon_border_surface_between(G4PVPlacement* one, G4PVPlacement* two) {
   static G4OpticalSurface* D2O_teflon_surface = nullptr;
   auto name = "D2O-Teflon-Surface";
