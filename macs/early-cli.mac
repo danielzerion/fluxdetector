@@ -1,9 +1,11 @@
 /my/lab_size 5 m
 
-/my/vessel_thickness 20 cm
-/my/teflon_thickness 50 cm
+# /my/vessel_thickness 20 cm
+# /my/teflon_thickness 50 cm
 
 #/my/detector_radius 0.9 m
 #/my/detector_length 20 cm
 
 #/my/particle proton
+
+/my/scint_yield  10

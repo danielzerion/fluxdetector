@@ -29,12 +29,13 @@ using vec_double = std::vector<G4double>;
 using vec_int    = std::vector<G4int>;
 
 struct my {
-  G4double lab_size         =  3    *  m;
-  G4double detector_length  =  1    *  m;
-  G4double detector_radius  =  0.56 *  m;
-  G4double vessel_thickness =  1    * cm;
-  G4double teflon_thickness =  0.5  * mm;
-  G4double particle_energy  = 30    * MeV;
+  G4double lab_size         =    3    *  m;
+  G4double detector_length  =    1    *  m;
+  G4double detector_radius  =    0.56 *  m;
+  G4double vessel_thickness =    1    * cm;
+  G4double teflon_thickness =    0.5  * mm;
+  G4double particle_energy  =   30    * MeV;
+  G4double scint_yield      = 3200    / MeV;
   std::unique_ptr<G4ParticleGun> gun;
   G4String particle = "e-";
 };
@@ -115,7 +116,9 @@ const vec_double OPTPHOT_ENERGY_RANGE{1*eV, 8.21*eV};
 const G4double hc = CLHEP::h_Planck * CLHEP::c_light;
 
 // TODO: this gives us an idea of what is likely to be needed for D2O
-G4Material* d2o_csi_hybrid_FIXME_with_properties() {
+G4Material* d2o_csi_hybrid_FIXME_with_properties(G4double scint_yield) {
+  std::cout << "-------------------- SCINT YIELD: " << scint_yield / (1/MeV) << std::endl;
+
   auto csi = D2O_without_properties();
   // csi_rindex: values taken from "Optimization of Parameters for a CsI(Tl) Scintillator Detector Using GEANT4-Based Monte Carlo..." by Mitra et al (mainly page 3)
   //  csi_scint: Fig. 2 in the paper
@@ -126,7 +129,7 @@ G4Material* d2o_csi_hybrid_FIXME_with_properties() {
   auto    csi_abslength = n4::scale_by(m    , {5    , 5    , 5     , 5     });
   // Values from "Temperature dependence of pure CsI: scintillation light yield and decay time" by Amsler et al
   // "cold" refers to ~77K, i.e. liquid nitrogen temperature
-  G4double csi_scint_yield      =  3200 / MeV;
+  G4double csi_scint_yield      =  scint_yield;
   G4double csi_scint_yield_cold = 50000 / MeV;
   G4double csi_time_fast        =     6 * ns;
   G4double csi_time_slow        =    28 * ns;
@@ -140,7 +143,6 @@ G4Material* d2o_csi_hybrid_FIXME_with_properties() {
     .add("SCINTILLATIONTIMECONSTANT1", csi_time_fast)
     .add("SCINTILLATIONTIMECONSTANT2", csi_time_slow)
     .add("SCINTILLATIONYIELD"        , csi_scint_yield)
-    .add("SCINTILLATIONYIELD"        ,   100 / MeV) // for testing
     .add("SCINTILLATIONYIELD1"       ,     0.57   )
     .add("SCINTILLATIONYIELD2"       ,     0.43   )
     .add("RESOLUTIONSCALE"           ,     1.0    )
@@ -173,7 +175,7 @@ G4Material* teflon_with_properties() {
 auto my_geometry(const my& my) {
   // Heavy water
 
-  auto D2O = d2o_csi_hybrid_FIXME_with_properties();
+  auto D2O = d2o_csi_hybrid_FIXME_with_properties(my.scint_yield);
 
   auto air    = n4::material("G4_AIR");
   auto Al     = n4::material("G4_Al");
@@ -223,7 +225,8 @@ int main(int argc, char* argv[]) {
   messenger -> DeclarePropertyWithUnit("vessel_thickness", "m"  , my.vessel_thickness);
   messenger -> DeclarePropertyWithUnit("teflon_thickness", "m"  , my.teflon_thickness);
   messenger -> DeclarePropertyWithUnit("particle_energy" , "MeV", my.particle_energy);
-  messenger -> DeclareProperty("particle", my.particle);
+  messenger -> DeclareProperty("scint_yield", my.scint_yield);
+  messenger -> DeclareProperty("particle"   , my.particle);
 
     n4::run_manager::create()
     .ui("fluxdetector", argc, argv)
