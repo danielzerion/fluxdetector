@@ -100,13 +100,23 @@ void place_D2O_teflon_border_surface_between(G4PVPlacement* one, G4PVPlacement* 
   new G4LogicalBorderSurface(name, one, two, D2O_teflon_surface);
 }
 
-const vec_double OPTPHOT_ENERGY_RANGE{1*eV, 8.21*eV};
+auto D2O_without_properties() {
+  G4Isotope* H2 = new G4Isotope("H2",1,2);
+  G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
+  D -> AddIsotope(H2, 100*perCent);
 
+  return nain4::material_from_elements_N(
+    "D2O", 1.107*g/cm3,
+    {.state=kStateLiquid, .temp=293.15*kelvin, .pressure = 1*atmosphere},
+    {{D, 2}, {"O", 1}});
+}
+
+const vec_double OPTPHOT_ENERGY_RANGE{1*eV, 8.21*eV};
 const G4double hc = CLHEP::h_Planck * CLHEP::c_light;
 
 // TODO: this gives us an idea of what is likely to be needed for D2O
 G4Material* d2o_csi_hybrid_FIXME_with_properties() {
-  auto csi = n4::material("G4_CESIUM_IODIDE");
+  auto csi = D2O_without_properties();
   // csi_rindex: values taken from "Optimization of Parameters for a CsI(Tl) Scintillator Detector Using GEANT4-Based Monte Carlo..." by Mitra et al (mainly page 3)
   //  csi_scint: Fig. 2 in the paper
   // must be in increasing ENERGY order (decreasing wavelength) for scintillation to work properly
@@ -130,7 +140,7 @@ G4Material* d2o_csi_hybrid_FIXME_with_properties() {
     .add("SCINTILLATIONTIMECONSTANT1", csi_time_fast)
     .add("SCINTILLATIONTIMECONSTANT2", csi_time_slow)
     .add("SCINTILLATIONYIELD"        , csi_scint_yield)
-    //.add("SCINTILLATIONYIELD"        ,   100 / MeV) // for testing
+    .add("SCINTILLATIONYIELD"        ,   100 / MeV) // for testing
     .add("SCINTILLATIONYIELD1"       ,     0.57   )
     .add("SCINTILLATIONYIELD2"       ,     0.43   )
     .add("RESOLUTIONSCALE"           ,     1.0    )
@@ -161,16 +171,9 @@ G4Material* teflon_with_properties() {
 }
 
 auto my_geometry(const my& my) {
-
-  G4Isotope* H2 = new G4Isotope("H2",1,2);
-  G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
-  D -> AddIsotope(H2, 100*perCent);
-
   // Heavy water
-  auto D2O = nain4::material_from_elements_N(
-    "D2O", 1.107*g/cm3,
-    {.state=kStateLiquid, .temp=293.15*kelvin, .pressure = 1*atmosphere},
-    {{D, 2}, {"O", 1}});
+
+  auto D2O = d2o_csi_hybrid_FIXME_with_properties();
 
   auto air    = n4::material("G4_AIR");
   auto Al     = n4::material("G4_Al");
