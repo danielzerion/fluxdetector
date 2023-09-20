@@ -2,3 +2,4 @@
 #/my/particle proton
 #/my/detector_radius 0.9 m
 #/my/detector_length 20 cm
+/my/vessel_thickness 20 cm

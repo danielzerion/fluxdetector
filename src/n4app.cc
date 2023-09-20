@@ -30,10 +30,11 @@ void verify_number_of_args(int argc){
 }
 
 struct my {
-  G4double lab_size        =  3    * m;
-  G4double detector_length =  1    * m;
-  G4double detector_radius =  0.56 * m;
-  G4double particle_energy = 30    * MeV;
+  G4double lab_size         =  3    * m;
+  G4double detector_length  =  1    * m;
+  G4double detector_radius  =  0.56 * m;
+  G4double vessel_thickness =  1    *cm;
+  G4double particle_energy  = 30    * MeV;
   std::unique_ptr<G4ParticleGun> gun;
   G4String particle = "e-";
 };
@@ -91,8 +92,18 @@ auto my_geometry(const my& my) {
     {{D, 2}, {"O", 1}});
 
   auto air    = n4::material("G4_AIR");
+  auto Al     = n4::material("G4_Al");
   auto world  = n4::box("World").cube(my.lab_size).volume(air);
-  auto det    = n4::tubs("Detector").r(my.detector_radius).z(my.detector_length).place(D2O).in(world).rotate_x(90*deg).now();
+  auto vessel = n4::tubs("Vessel")
+    .r(my.detector_radius + my.vessel_thickness)
+    .z(my.detector_length + my.vessel_thickness)
+    .place(Al)
+    .in(world).at_z(my.vessel_thickness/2).rotate_x(90*deg).now();
+  auto det    = n4::tubs("Detector")
+    .r(my.detector_radius)
+    .z(my.detector_length)
+    .place(D2O)
+    .in(vessel).at_z(-my.vessel_thickness/2).now();
   return n4::place(world).now();
 }
 
@@ -104,10 +115,11 @@ int main(int argc, char* argv[]) {
   // The trailing slash after '/my' is CRUCIAL: without it, the messenger
   // violates the principle of least surprise.
   auto messenger = new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"};
-  messenger -> DeclarePropertyWithUnit("lab_size"       , "m"  , my.lab_size  );
-  messenger -> DeclarePropertyWithUnit("detector_radius", "m"  , my.detector_radius);
-  messenger -> DeclarePropertyWithUnit("detector_length", "m"  , my.detector_length);
-  messenger -> DeclarePropertyWithUnit("particle_energy", "MeV", my.particle_energy);
+  messenger -> DeclarePropertyWithUnit("lab_size"        , "m"  , my.lab_size  );
+  messenger -> DeclarePropertyWithUnit("detector_radius" , "m"  , my.detector_radius);
+  messenger -> DeclarePropertyWithUnit("detector_length" , "m"  , my.detector_length);
+  messenger -> DeclarePropertyWithUnit("vessel_thickness", "m"  , my.vessel_thickness);
+  messenger -> DeclarePropertyWithUnit("particle_energy" , "MeV", my.particle_energy);
   messenger -> DeclareProperty("particle", my.particle);
 
     n4::run_manager::create()
