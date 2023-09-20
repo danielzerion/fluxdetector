@@ -4,9 +4,11 @@
 #include "n4-utils.hh"
 #include "n4-volumes.hh"
 
-#include <G4GenericMessenger.hh>
 
+#include <G4EmStandardPhysics_option4.hh>
+#include <G4GenericMessenger.hh>
 #include <G4LogicalBorderSurface.hh>
+#include <G4OpticalPhysics.hh>
 #include <G4OpticalSurface.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleGun.hh>
@@ -149,6 +151,14 @@ auto my_geometry(const my& my) {
   return n4::place(world).now();
 }
 
+auto my_physics_list() {
+    G4int verbosity;
+    auto physics_list = new FTFP_BERT{verbosity = 0};
+    physics_list ->  ReplacePhysics(new G4EmStandardPhysics_option4());
+    physics_list -> RegisterPhysics(new G4OpticalPhysics{});
+    return physics_list;
+}
+
 int main(int argc, char* argv[]) {
   unsigned n_event = 0;
 
@@ -173,7 +183,7 @@ int main(int argc, char* argv[]) {
     .apply_cli_early_macro() // CLI --early-macro executed at this point
     // .apply_command(...) // also possible after apply_early_macro
 
-    .physics<FTFP_BERT>(0) // verbosity 0
+    .physics(my_physics_list)
     .geometry([&] { return my_geometry(my); })
     .actions(create_actions(my, n_event))
 
