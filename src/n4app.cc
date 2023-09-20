@@ -6,6 +6,8 @@
 
 #include <G4GenericMessenger.hh>
 
+#include <G4LogicalBorderSurface.hh>
+#include <G4OpticalSurface.hh>
 #include <G4ParticleDefinition.hh>
 #include <G4ParticleGun.hh>
 #include <G4PrimaryParticle.hh>
@@ -21,11 +23,15 @@
 #include <Randomize.hh>
 #include <cstdlib>
 
+using vec_double = std::vector<G4double>;
+using vec_int    = std::vector<G4int>;
+
 struct my {
-  G4double lab_size         =  3    * m;
-  G4double detector_length  =  1    * m;
-  G4double detector_radius  =  0.56 * m;
-  G4double vessel_thickness =  1    *cm;
+  G4double lab_size         =  3    *  m;
+  G4double detector_length  =  1    *  m;
+  G4double detector_radius  =  0.56 *  m;
+  G4double vessel_thickness =  1    * cm;
+  G4double teflon_thickness =  0.5  * mm;
   G4double particle_energy  = 30    * MeV;
   std::unique_ptr<G4ParticleGun> gun;
   G4String particle = "e-";
@@ -71,11 +77,45 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
  -> set(  new n4::stepping_action{my_stepping_action});
 }
 
+void place_D2O_teflon_border_surface_between(G4PVPlacement* one, G4PVPlacement* two) {
+  static G4OpticalSurface* D2O_teflon_surface = nullptr;
+  auto name = "D2O-Teflon-Surface";
+  if (! D2O_teflon_surface) {
+    D2O_teflon_surface = new G4OpticalSurface(name);
+    // TODO: Values copied blindly from double-sipm, need verification
+    D2O_teflon_surface -> SetType(dielectric_dielectric);
+    D2O_teflon_surface -> SetModel(unified);
+    D2O_teflon_surface -> SetFinish(groundfrontpainted);
+    D2O_teflon_surface -> SetSigmaAlpha(0.0);
+
+    vec_double pp = {2.038*eV, 4.144*eV};
+    // According to the docs, for UNIFIED, dielectric_dielectric surfaces only the Lambertian reflection is turned on
+    D2O_teflon_surface -> SetMaterialPropertiesTable(
+      n4::material_properties{}
+      .add("REFLECTIVITY", pp, {0.98 , 0.98})
+      .done());
+  }
+  new G4LogicalBorderSurface(name, one, two, D2O_teflon_surface);
+}
+
+const vec_double OPTPHOT_ENERGY_RANGE{1*eV, 8.21*eV};
+
+G4Material* teflon_with_properties() {
+    auto teflon = n4::material("G4_TEFLON");
+    // Values could be taken from "Optical properties of Teflon AF amorphous fluoropolymers" by Yang, French & Tokarsky (using AF2400, Fig.6)
+    // but are also stated in the same paper as above
+    G4MaterialPropertiesTable *mpt_teflon = n4::material_properties()
+        .add("RINDEX", OPTPHOT_ENERGY_RANGE, {1.35, 1.35})
+        .done();
+    teflon -> SetMaterialPropertiesTable(mpt_teflon);
+    return teflon;
+}
+
 auto my_geometry(const my& my) {
 
   G4Isotope* H2 = new G4Isotope("H2",1,2);
   G4Element* D  = new G4Element("TS_D_of_Heavy_Water", "D", 1);
-  D->AddIsotope(H2, 100*perCent);
+  D -> AddIsotope(H2, 100*perCent);
 
   // Heavy water
   auto D2O = nain4::material_from_elements_N(
@@ -85,17 +125,27 @@ auto my_geometry(const my& my) {
 
   auto air    = n4::material("G4_AIR");
   auto Al     = n4::material("G4_Al");
+  auto teflon = teflon_with_properties();
   auto world  = n4::box("World").cube(my.lab_size).volume(air);
+
   auto vessel = n4::tubs("Vessel")
-    .r(my.detector_radius + my.vessel_thickness)
-    .z(my.detector_length + my.vessel_thickness)
+    .r(my.detector_radius + my.vessel_thickness + my.teflon_thickness)
+    .z(my.detector_length + my.vessel_thickness + my.teflon_thickness)
     .place(Al)
-    .in(world).at_z(my.vessel_thickness/2).rotate_x(90*deg).now();
-  auto det    = n4::tubs("Detector")
+    .in(world).at_z((my.vessel_thickness+my.teflon_thickness)/2).rotate_x(90*deg).now();
+
+  auto reflector = n4::tubs("Reflector")
+    .r(my.detector_radius + my.teflon_thickness)
+    .z(my.detector_length + my.teflon_thickness)
+    .place(teflon)
+    .in(vessel).at_z(-my.vessel_thickness/2).now();
+
+  n4::tubs("Detector")
     .r(my.detector_radius)
     .z(my.detector_length)
     .place(D2O)
-    .in(vessel).at_z(-my.vessel_thickness/2).now();
+    .in(reflector).at_z(-my.teflon_thickness/2).now();
+
   return n4::place(world).now();
 }
 
@@ -111,6 +161,7 @@ int main(int argc, char* argv[]) {
   messenger -> DeclarePropertyWithUnit("detector_radius" , "m"  , my.detector_radius);
   messenger -> DeclarePropertyWithUnit("detector_length" , "m"  , my.detector_length);
   messenger -> DeclarePropertyWithUnit("vessel_thickness", "m"  , my.vessel_thickness);
+  messenger -> DeclarePropertyWithUnit("teflon_thickness", "m"  , my.teflon_thickness);
   messenger -> DeclarePropertyWithUnit("particle_energy" , "MeV", my.particle_energy);
   messenger -> DeclareProperty("particle", my.particle);
 
