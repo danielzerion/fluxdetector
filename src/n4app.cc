@@ -102,6 +102,16 @@ void place_D2O_teflon_border_surface_between(G4PVPlacement* one, G4PVPlacement* 
 
 const vec_double OPTPHOT_ENERGY_RANGE{1*eV, 8.21*eV};
 
+
+G4Material* air_with_properties() {
+    auto air = air_with_properties();
+    G4MaterialPropertiesTable *mpt_air = n4::material_properties()
+        .add("RINDEX", OPTPHOT_ENERGY_RANGE, {1, 1})
+        .done();
+    air -> SetMaterialPropertiesTable(mpt_air);
+    return air;
+}
+
 G4Material* teflon_with_properties() {
     auto teflon = n4::material("G4_TEFLON");
     // Values could be taken from "Optical properties of Teflon AF amorphous fluoropolymers" by Yang, French & Tokarsky (using AF2400, Fig.6)
