@@ -21,14 +21,6 @@
 #include <Randomize.hh>
 #include <cstdlib>
 
-void verify_number_of_args(int argc){
-  if (argc != 2) {
-    std::cerr << "Wrong number of arguments: " << argc
-              << "\nUsage:\n./n4app <number of events>" << std::endl;
-    std::exit(EXIT_FAILURE);
-  }
-}
-
 struct my {
   G4double lab_size         =  3    * m;
   G4double detector_length  =  1    * m;
