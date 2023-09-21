@@ -30,7 +30,10 @@ include(${Geant4_USE_FILE})
 
 # CHANGEME-n4app.cc: change the file name n4app.cc on the following line and
 # rename the file in this directory
-add_executable(${EXE} n4app.cc)
+add_executable(${EXE}
+  n4app.cc
+  ${PROJECT_SOURCE_DIR}/materials.cc
+)
 
 target_link_libraries(
   ${EXE}
