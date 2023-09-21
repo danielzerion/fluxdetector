@@ -8,7 +8,6 @@
 
 
 #include <G4EmStandardPhysics_option4.hh>
-#include <G4GenericMessenger.hh>
 #include <G4LogicalBorderSurface.hh>
 #include <G4OpticalPhysics.hh>
 #include <G4OpticalSurface.hh>
@@ -207,19 +206,7 @@ int main(int argc, char* argv[]) {
 
   my my;
 
-  // The trailing slash after '/my' is CRUCIAL: without it, the messenger
-  // violates the principle of least surprise.
-  auto messenger = new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"};
-  messenger -> DeclarePropertyWithUnit("lab_size"        , "m"  , my.lab_size  );
-  messenger -> DeclarePropertyWithUnit("detector_radius" , "m"  , my.detector_radius);
-  messenger -> DeclarePropertyWithUnit("detector_length" , "m"  , my.detector_length);
-  messenger -> DeclarePropertyWithUnit("vessel_thickness", "m"  , my.vessel_thickness);
-  messenger -> DeclarePropertyWithUnit("teflon_thickness", "m"  , my.teflon_thickness);
-  messenger -> DeclarePropertyWithUnit("particle_energy" , "MeV", my.particle_energy);
-  messenger -> DeclareProperty("scint_yield", my.scint_yield);
-  messenger -> DeclareProperty("particle"   , my.particle);
-
-    n4::run_manager::create()
+  n4::run_manager::create()
     .ui("fluxdetector", argc, argv)
     .macro_path("macs")
     .apply_command("/my/straw_radius 0.5 m")
