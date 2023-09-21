@@ -11,6 +11,8 @@ struct my {
   G4double detector_radius  =    0.56 *  m;
   G4double vessel_thickness =    1    * cm;
   G4double teflon_thickness =    0.5  * mm;
+  G4double pmt_thickness    =   10    * mm;
+  G4double pmt_radius       =   36    * mm;
   G4double particle_energy  =   30    * MeV;
   G4double scint_yield      = 3200    / MeV;
   std::unique_ptr<G4ParticleGun> gun{};
@@ -24,6 +26,8 @@ struct my {
     msngr -> DeclarePropertyWithUnit("detector_length" ,   "m", detector_length);
     msngr -> DeclarePropertyWithUnit("vessel_thickness",   "m", vessel_thickness);
     msngr -> DeclarePropertyWithUnit("teflon_thickness",   "m", teflon_thickness);
+    msngr -> DeclarePropertyWithUnit("pmt_thickness"   ,  "mm", pmt_thickness);
+    msngr -> DeclarePropertyWithUnit("pmt_diameter"    ,  "mm", pmt_radius);
     msngr -> DeclarePropertyWithUnit("particle_energy" , "MeV", particle_energy);
     msngr -> DeclareProperty        ("scint_yield"     ,        scint_yield);
     msngr -> DeclareProperty        ("particle"        ,        particle);

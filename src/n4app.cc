@@ -27,6 +27,15 @@
 #include <Randomize.hh>
 #include <cstdlib>
 
+auto PMT(const my& my) {
+  static auto dummy_material = n4::material("G4_Cu");
+  static auto unnnumbered_pmt = n4::tubs("PMT")
+    .z(my.pmt_thickness).r(my.pmt_radius)
+    .place(dummy_material)
+    .at_z((my.pmt_thickness-my.detector_length)/2);
+  return unnnumbered_pmt;
+}
+
 auto my_generator(my& my) {
   my.gun.reset(new G4ParticleGun{n4::find_particle(my.particle)});
 
@@ -90,11 +99,20 @@ auto my_geometry(const my& my) {
     .place(teflon)
     .in(vessel).at_z(-my.vessel_thickness/2).now();
 
-  n4::tubs("Detector")
+  auto water = n4::tubs("Water")
     .r(my.detector_radius)
     .z(my.detector_length)
     .place(D2O)
     .in(reflector).at_z(-my.teflon_thickness/2).now();
+
+  auto one_pmt = PMT(my).in(water);
+
+  n4::place(one_pmt).copy_no(0)                                            .now();
+  n4::place(one_pmt).copy_no(1).at_x(  my.detector_radius - my.pmt_radius ).now();
+  n4::place(one_pmt).copy_no(2).at_x(-(my.detector_radius - my.pmt_radius)).now();
+  n4::place(one_pmt).copy_no(3).at_y(  my.detector_radius - my.pmt_radius ).now();
+  n4::place(one_pmt).copy_no(4).at_y(-(my.detector_radius - my.pmt_radius)).now();
+
 
   return n4::place(world).now();
 }
