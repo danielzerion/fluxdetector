@@ -52,10 +52,10 @@ auto my_generator(my& my) {
       );
       return G4ThreeVector{x, y, z};
     };
-    my.gun->SetParticlePosition(random_position_in_detector());
-    my.gun->SetParticleEnergy(my.particle_energy);
-    my.gun->SetParticleMomentumDirection(G4RandomDirection());
-    my.gun->GeneratePrimaryVertex(event);
+    my.gun -> SetParticlePosition(random_position_in_detector());
+    my.gun -> SetParticleEnergy(my.particle_energy);
+    my.gun -> SetParticleMomentumDirection(G4RandomDirection());
+    my.gun -> GeneratePrimaryVertex(event);
   };
 }
 
