@@ -17,25 +17,24 @@
 
   in {
 
-    packages.default = self.packages.CHANGEME-my-package;
+    packages.default = self.packages.fluxdetector;
 
     # TODO: switch to clang environment
-    packages.CHANGEME-my-package = pkgs.stdenv.mkDerivation {
-      # CHANGEME-pname: replace "CHANGEME-my-package" with a name better-suited to your project
-      pname = "CHANGEME-my-package";
+    packages.fluxdetector = pkgs.stdenv.mkDerivation {
+      pname = "fluxdetector";
       version = "0.0.0";
       src = "${self}/src";
       nativeBuildInputs = dev-shell-packages; # TODO be more discriminating in nativeBuildInputs
     };
 
     # Executed by `nix run <URL of this flake> -- <args?>`
-    apps.default = self.apps.CHANGEME-my-app;
+    apps.default = self.apps.fluxdetector;
 
-    # Executed by `nix run <URL of this flake>#CHANGEME-my-app`
-    apps.CHANGEME-my-app = let
+    # Executed by `nix run <URL of this flake>#fluxdetector`
+    apps.fluxdetector = let
       g4-data = nain4.deps.g4-data-package;
-      CHANGEME-wrap-my-package = pkgs.writeShellScriptBin "CHANGEME-my-app" ''
-        export PATH=${pkgs.lib.makeBinPath [ self.packages.CHANGEME-my-package ]}:$PATH
+      wrap-fluxdetector = pkgs.writeShellScriptBin "fluxdetector-wrapped" ''
+        export PATH=${pkgs.lib.makeBinPath [ self.packages.fluxdetector ]}:$PATH
         # export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [ nain4.packages.geant4 ] }:$LD_LIBRARY_PATH
 
         # TODO replace manual envvar setting with with use of packages' setupHooks
