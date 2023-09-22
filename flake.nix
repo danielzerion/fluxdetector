@@ -1,6 +1,5 @@
 {
-  #CHANGEME-flake-description: keep it short (1 line).
-  description = "flake.nix line 2: Change this to describe your project";
+  description = "Heavy water detector for European Spallation Source";
 
   inputs = {
     nain4  .url     = "github:jacg/nain4";

@@ -11,7 +11,7 @@ build:
 
 run *ARGS: build
   #!/usr/bin/env sh
-  sh execute-with-nixgl-if-needed.sh ./build/app/CHANGEME-my-n4-prog "$@"
+  sh execute-with-nixgl-if-needed.sh ./build/app/fluxdetector "$@"
   exit $?
 
 clean:
