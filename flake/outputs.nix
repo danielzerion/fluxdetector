@@ -52,7 +52,7 @@
 
         exec fluxdetector --macro-path ${self}/macs $*
       '';
-    in { type = "app"; program = "${CHANGEME-wrap-my-package}/bin/CHANGEME-my-app"; };
+    in { type = "app"; program = "${wrap-fluxdetector}/bin/fluxdetector-wrapped"; };
 
 
     # Used by `direnv` when entering this directory (also by `nix develop <URL to this flake>`)
@@ -87,8 +87,8 @@
     # 3. [on lxplus] `singularity run hello.img`
     packages.singularity = pkgs.singularity-tools.buildImage {
       name = "test";
-      contents = [ self.apps.CHANGEME-my-app.program ];
-      runScript = "${self.apps.CHANGEME-my-app.program} $@";
+      contents = [ self.apps.fluxdetector.program ];
+      runScript = "${self.apps.fluxdetector.program} $@";
       diskSize = 10240;
       memSize = 5120;
     };
