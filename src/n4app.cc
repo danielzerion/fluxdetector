@@ -162,18 +162,18 @@ int main(int argc, char* argv[]) {
   n4::run_manager::create()
     .ui("fluxdetector", argc, argv)
     .macro_path("macs")
-    .apply_command("/my/straw_radius 0.5 m")
-    .apply_early_macro("early-hard-wired.mac")
-    .apply_cli_early_macro() // CLI --early-macro executed at this point
+    //.apply_command("/my/lab_size 1.2 m")
+    //.apply_early_macro("early-hard-wired.mac")
+    .apply_cli_early() // CLI --early executed at this point
     // .apply_command(...) // also possible after apply_early_macro
 
     .physics(my_physics_list)
     .geometry([&] { return my_geometry(my); })
     .actions(create_actions(my, n_event))
 
-    .apply_command("/my/particle e-")
-    .apply_late_macro("late-hard-wired.mac")
-    .apply_cli_late_macro() // CLI --late-macro executed at this point
+    //.apply_command("/my/particle e-")
+    //.apply_late_macro("late-hard-wired.mac")
+    .apply_cli_late() // CLI --late executed at this point
     // .apply_command(...) // also possible after apply_late_macro
 
     .run();
