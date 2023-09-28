@@ -147,10 +147,10 @@ auto my_geometry(const my& my) {
 }
 
 auto my_physics_list() {
-    G4int verbosity;
-    auto physics_list = new FTFP_BERT{verbosity = 0};
-    physics_list ->  ReplacePhysics(new G4EmStandardPhysics_option4());
-    physics_list -> RegisterPhysics(new G4OpticalPhysics{});
+    G4int verbosity = 0;
+    auto physics_list =             new FTFP_BERT                  {verbosity};
+    physics_list ->  ReplacePhysics(new G4EmStandardPhysics_option4{verbosity});
+    physics_list -> RegisterPhysics(new G4OpticalPhysics           {verbosity});
     return physics_list;
 }
 
