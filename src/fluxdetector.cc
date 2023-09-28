@@ -146,10 +146,10 @@ auto my_geometry(const my& my) {
   return n4::place(world).now();
 }
 
-auto my_physics_list(G4int verbosity) {
-  auto physics_list =             new FTFP_BERT                  {verbosity};
-  physics_list ->  ReplacePhysics(new G4EmStandardPhysics_option4{verbosity});
-  physics_list -> RegisterPhysics(new G4OpticalPhysics           {verbosity});
+auto my_physics_list(const my& my) {
+  auto physics_list =             new FTFP_BERT                  {my.physics_verbose};
+  physics_list ->  ReplacePhysics(new G4EmStandardPhysics_option4{my.em_verbose});
+  physics_list -> RegisterPhysics(new G4OpticalPhysics           {my.optical_verbose});
   return physics_list;
 }
 
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
     .apply_cli_early() // CLI --early executed at this point
     // .apply_command(...) // also possible after apply_early_macro
 
-    .physics([&] { return my_physics_list(my.physics_verbose); })
+    .physics([&] { return my_physics_list(my); })
     .geometry([&] { return my_geometry(my); })
     .actions(create_actions(my, n_event))
 

@@ -16,6 +16,8 @@ struct my {
   G4double particle_energy  =   30    * MeV;
   G4double scint_yield      = 3200    / MeV;
   G4int    physics_verbose  =    0;
+  G4int         em_verbose  =    0;
+  G4int    optical_verbose  =    0;
   std::unique_ptr<G4ParticleGun> gun{};
   G4String particle = "e-";
 
@@ -31,6 +33,8 @@ struct my {
     msngr -> DeclarePropertyWithUnit("pmt_diameter"    ,  "mm", pmt_radius);
     msngr -> DeclarePropertyWithUnit("particle_energy" , "MeV", particle_energy);
     msngr -> DeclareProperty        ("physics_verbose" ,        physics_verbose);
+    msngr -> DeclareProperty        ("em_verbose"      ,        em_verbose);
+    msngr -> DeclareProperty        ("optical_verbose" ,        optical_verbose);
     msngr -> DeclareProperty        ("scint_yield"     ,        scint_yield);
     msngr -> DeclareProperty        ("particle"        ,        particle);
   }
