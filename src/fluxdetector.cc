@@ -135,12 +135,18 @@ auto my_geometry(const my& my) {
   //   }
   // }
 
+  double theta = 0.;
+  n4::place(one_pmt).copy_no(0).now();
+  for (int i=0; i<=5; i++){
+    theta = CLHEP::pi*(double)i/3.;
+    n4::place(one_pmt).copy_no(i+1).at_x((my.detector_radius - my.pmt_radius)*cos(theta) )
+      .at_y( (my.detector_radius - my.pmt_radius)*sin(theta) ).now();
+  }
 
-  n4::place(one_pmt).copy_no(0)                                            .now();
-  n4::place(one_pmt).copy_no(1).at_x(  my.detector_radius - my.pmt_radius ).now();
-  n4::place(one_pmt).copy_no(2).at_x(-(my.detector_radius - my.pmt_radius)).now();
-  n4::place(one_pmt).copy_no(3).at_y(  my.detector_radius - my.pmt_radius ).now();
-  n4::place(one_pmt).copy_no(4).at_y(-(my.detector_radius - my.pmt_radius)).now();
+  //  n4::place(one_pmt).copy_no(1).at_x(  my.detector_radius - my.pmt_radius ).now();
+  //  n4::place(one_pmt).copy_no(2).at_x((my.detector_radius - my.pmt_radius)*a).now();
+  //  n4::place(one_pmt).copy_no(3).at_y(  my.detector_radius - my.pmt_radius ).now();
+  //  n4::place(one_pmt).copy_no(4).at_y(-(my.detector_radius - my.pmt_radius)).now();
 
 
   return n4::place(world).now();
