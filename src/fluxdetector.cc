@@ -108,8 +108,9 @@ auto my_geometry(const my& my) {
 
   n4::place(one_pmt).copy_no(0).now();
   for (int i=1; i<7; i++) {
+    auto margin = my.pmt_radius / 20;
     auto theta = CLHEP::pi * i / 3;
-    auto r = my.detector_radius - my.pmt_radius;
+    auto r = my.detector_radius - my.pmt_radius - margin;
     n4::place(one_pmt).copy_no(i).at_x(r * cos(theta)).at_y(r * sin(theta)).now();
   }
 
