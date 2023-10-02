@@ -106,12 +106,11 @@ auto my_geometry(const my& my) {
 
   auto one_pmt = PMT(my).in(water);
 
-  double theta = 0.;
   n4::place(one_pmt).copy_no(0).now();
-  for (int i=0; i<=5; i++){
-    theta = CLHEP::pi*(double)i/3.;
-    n4::place(one_pmt).copy_no(i+1).at_x((my.detector_radius - my.pmt_radius)*cos(theta) )
-      .at_y( (my.detector_radius - my.pmt_radius)*sin(theta) ).now();
+  for (int i=1; i<7; i++) {
+    auto theta = CLHEP::pi * i / 3;
+    auto r = my.detector_radius - my.pmt_radius;
+    n4::place(one_pmt).copy_no(i).at_x(r * cos(theta)).at_y(r * sin(theta)).now();
   }
 
   return n4::place(world).now();
