@@ -7,6 +7,7 @@
 #include <n4-utils.hh>
 #include <n4-volumes.hh>
 
+#include <G4Step.hh>
 #include <G4EmStandardPhysics_option4.hh>
 #include <G4LogicalBorderSurface.hh>
 #include <G4OpticalPhysics.hh>
@@ -26,10 +27,42 @@
 #include <Randomize.hh>
 #include <cstdlib>
 
+n4::sensitive_detector* sensitive_detector(const my& my) {
+  auto gamma = n4::find_particle("gamma");
+  // `process_hits` is a mandatory method of `sensitive_detector`
+  auto process_hits = [&my, gamma](G4Step* step) {
+    // Just a few ideal of things you might want to do in here
+    auto track = step -> GetTrack();
+    track -> SetTrackStatus(fStopAndKill);
+
+    auto pre      = step -> GetPreStepPoint();
+    auto copy_nb  = pre  -> GetTouchable() -> GetCopyNumber();
+    auto time     = pre  -> GetGlobalTime();
+    auto momentum = pre  -> GetMomentum();
+    auto energy   = momentum.mag();
+    auto particle = track -> GetParticleDefinition();
+
+    std::cout << "PMT-" << copy_nb << " detected " << particle -> GetParticleName() << std::endl;
+
+    if (particle == gamma) { std::cout << "                Got a gamma\n"; }
+
+    return true; // see https://github.com/jacg/nain4/issues/38
+  };
+
+  // Optional methods of `sensitive_detector`
+  auto init = [&my] (G4HCofThisEvent*) { std::cout << "----- Optionally do something at start of event" << std::endl; };
+  auto end  = [&my] (G4HCofThisEvent*) { std::cout << "----- Optionally do something at  end  of event" << std::endl; };
+
+  return (new n4::sensitive_detector{"PMT", process_hits}) // `process_hits` must be given
+    -> initialize  (init)                                  // `initialize`   may be skipped
+    -> end_of_event(end);                                  // `end_of_event` may be skipped
+}
+
 auto PMT(const my& my) {
   static auto dummy_material = n4::material("G4_Cu");
   static auto unnnumbered_pmt = n4::tubs("PMT")
     .z(my.pmt_thickness).r(my.pmt_radius)
+    .sensitive(sensitive_detector(my))
     .place(dummy_material)
     .at_z((my.pmt_thickness-my.detector_length)/2);
   return unnnumbered_pmt;
