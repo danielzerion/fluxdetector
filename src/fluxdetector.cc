@@ -106,35 +106,6 @@ auto my_geometry(const my& my) {
 
   auto one_pmt = PMT(my).in(water);
 
-
-  // TODO: steal ideas for PMT distribution from this code:
-
-  // void jaszczak_phantom::rod_sector(unsigned long n, G4double r,
-  //                                   G4LogicalVolume* body, G4Material* material) const {
-  //   auto d = 2 * r;
-  //   auto z = (height_rods - height_body) / 2;
-
-  //   // Sector displacement from centre, to accommodate gap between sectors
-  //   auto dx = gap * cos(pi/6);
-  //   auto dy = gap * sin(pi/6);
-  //   // Displacement of first rod WRT sector corner
-  //   dx += r * sqrt(3);
-  //   dy += r;
-  //   // Basis vectors of rod lattice
-  //   const auto Ax = 2.0, Ay = 0.0;
-  //   const auto Bx = 1.0, By = sqrt(3);
-  //   auto a = 0;
-  //   for (bool did_b=true ; did_b; a+=1) {
-  //     did_b = false;
-  //     for (auto b = 0; /*break in body*/; b+=1, did_b = true) {
-  //       auto x = (a*Ax + b*Bx) * d + dx;
-  //       auto y = (a*Ay + b*By) * d + dy;
-  //       if (sqrt(x*x + y*y) + r + margin >= radius_body) { break; }
-  //       n4::place(one_pmt).at(x,y,z).now();
-  //     }
-  //   }
-  // }
-
   double theta = 0.;
   n4::place(one_pmt).copy_no(0).now();
   for (int i=0; i<=5; i++){
@@ -142,12 +113,6 @@ auto my_geometry(const my& my) {
     n4::place(one_pmt).copy_no(i+1).at_x((my.detector_radius - my.pmt_radius)*cos(theta) )
       .at_y( (my.detector_radius - my.pmt_radius)*sin(theta) ).now();
   }
-
-  //  n4::place(one_pmt).copy_no(1).at_x(  my.detector_radius - my.pmt_radius ).now();
-  //  n4::place(one_pmt).copy_no(2).at_x((my.detector_radius - my.pmt_radius)*a).now();
-  //  n4::place(one_pmt).copy_no(3).at_y(  my.detector_radius - my.pmt_radius ).now();
-  //  n4::place(one_pmt).copy_no(4).at_y(-(my.detector_radius - my.pmt_radius)).now();
-
 
   return n4::place(world).now();
 }
