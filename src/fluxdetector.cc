@@ -1,7 +1,11 @@
 #include "my.hh"
 #include "materials.hh"
 
-#include <n4-all.hh>
+#include <n4-main.hh>
+#include <n4-material.hh>
+#include <n4-shape.hh>
+#include <n4-inspect.hh>
+#include <n4-random.hh>
 
 #include <G4Step.hh>
 #include <G4EmStandardPhysics_option4.hh>
