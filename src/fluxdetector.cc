@@ -1,11 +1,7 @@
 #include "my.hh"
 #include "materials.hh"
 
-#include <nain4.hh>
-#include <g4-mandatory.hh>
-#include <n4_ui.hh>
-#include <n4-utils.hh>
-#include <n4-volumes.hh>
+#include <n4-all.hh>
 
 #include <G4Step.hh>
 #include <G4EmStandardPhysics_option4.hh>
