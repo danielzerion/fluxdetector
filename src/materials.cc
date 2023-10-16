@@ -61,7 +61,7 @@ G4Material* d2o_csi_hybrid_FIXME_with_properties(G4double scint_yield) {
 }
 
 G4Material* air_with_properties() {
-    auto air = air_with_properties();
+    auto air = n4::material("G4_AIR");
     G4MaterialPropertiesTable *mpt_air = n4::material_properties()
         .add("RINDEX", OPTPHOT_ENERGY_RANGE, {1, 1})
         .done();
