@@ -27,11 +27,13 @@
 #include <Randomize.hh>
 #include <cstdlib>
 
+std::array <G4double,7> PMTEnergy;
+std::array <G4int,7> PMTCount;
+
 n4::sensitive_detector* sensitive_detector(const my& my) {
-  auto gamma = n4::find_particle("gamma");
+  auto photon = n4::find_particle("opticalphoton");
   // `process_hits` is a mandatory method of `sensitive_detector`
-  auto process_hits = [&my, gamma](G4Step* step) {
-    // Just a few ideal of things you might want to do in here
+  auto process_hits = [&my, photon](G4Step* step) {
     auto track = step -> GetTrack();
     track -> SetTrackStatus(fStopAndKill);
 
@@ -42,16 +44,24 @@ n4::sensitive_detector* sensitive_detector(const my& my) {
     auto energy   = momentum.mag();
     auto particle = track -> GetParticleDefinition();
 
-    std::cout << "PMT-" << copy_nb << " detected " << particle -> GetParticleName() << std::endl;
-
-    if (particle == gamma) { std::cout << "                Got a gamma\n"; }
+    if (particle == photon) {
+      PMTEnergy[copy_nb] += pre -> GetTotalEnergy(); 
+      PMTCount[copy_nb]++;
+    }
 
     return true; // see https://github.com/jacg/nain4/issues/38
   };
 
   // Optional methods of `sensitive_detector`
-  auto init = [&my] (G4HCofThisEvent*) { std::cout << "----- Optionally do something at start of event" << std::endl; };
-  auto end  = [&my] (G4HCofThisEvent*) { std::cout << "----- Optionally do something at  end  of event" << std::endl; };
+  auto init = [&my] (G4HCofThisEvent*) {
+    for (auto& e:PMTEnergy){e=0;}
+    for (auto& f:PMTCount) {f=0;}
+  };
+  auto end  = [&my] (G4HCofThisEvent*) {
+    for (auto& e:PMTEnergy) {std::cout << e/eV << ", ";};
+    for (auto& f:PMTCount)  {std::cout << f    << ", ";}; 
+    std::cout << std::endl;
+  };
 
   return (new n4::sensitive_detector{"PMT", process_hits}) // `process_hits` must be given
     -> initialize  (init)                                  // `initialize`   may be skipped
