@@ -4,6 +4,8 @@
 #include <G4GenericMessenger.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4ParticleGun.hh>
+#include <G4Types.hh>
+#include <Randomize.hh>
 
 struct my {
   G4double lab_size         =    3    *  m;
@@ -20,6 +22,8 @@ struct my {
   G4int    optical_verbose  =    0;
   std::unique_ptr<G4ParticleGun> gun{};
   G4String particle = "e-";
+  void set_seed(G4long seed){G4Random::setTheSeed(seed);}
+
 
   my() : msngr{new G4GenericMessenger{nullptr, "/my/", "docs: bla bla bla"}} {
     // The trailing slash after '/my' is CRUCIAL: without it, the msngr
@@ -37,6 +41,7 @@ struct my {
     msngr -> DeclareProperty        ("optical_verbose" ,        optical_verbose);
     msngr -> DeclareProperty        ("scint_yield"     ,        scint_yield);
     msngr -> DeclareProperty        ("particle"        ,        particle);
+    msngr -> DeclareMethod          ("seed"            ,        &my::set_seed);
   }
   std::unique_ptr<G4GenericMessenger> msngr;
 };
