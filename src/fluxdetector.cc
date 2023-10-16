@@ -114,7 +114,7 @@ auto my_geometry(const my& my) {
 
   auto D2O = d2o_csi_hybrid_FIXME_with_properties(my.scint_yield);
 
-  auto air    = n4::material("G4_AIR");
+  auto air    = air_with_properties();
   auto Al     = n4::material("G4_Al");
   auto teflon = teflon_with_properties();
   auto world  = n4::box("World").cube(my.lab_size).volume(air);
