@@ -59,7 +59,7 @@ n4::sensitive_detector* sensitive_detector(const my& my) {
 }
 
 auto PMT(const my& my) {
-  static auto dummy_material = n4::material("G4_Cu");
+  static auto dummy_material = air_with_properties();
   static auto unnnumbered_pmt = n4::tubs("PMT")
     .z(my.pmt_thickness).r(my.pmt_radius)
     .sensitive(sensitive_detector(my))
