@@ -5,3 +5,4 @@ tmp/
 .direnv/
 G4History.macro
 build/
+/install/

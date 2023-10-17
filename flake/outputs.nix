@@ -10,7 +10,7 @@
 
   dev-shell-packages = with nain4;
     [ nain4.packages.nain4 ] ++
-    deps.dev ++ deps.build ++ deps.test ++ deps.run
+    deps.build-prop ++ deps.test ++ deps.run-prop
     ++ pkgs.lib.optionals pkgs.stdenv.isDarwin []
     ++ pkgs.lib.optionals pkgs.stdenv.isLinux  []
   ;
@@ -19,12 +19,11 @@
 
     packages.default = self.packages.fluxdetector;
 
-    # TODO: switch to clang environment
     packages.fluxdetector = pkgs.stdenv.mkDerivation {
       pname = "fluxdetector";
       version = "0.0.0";
       src = "${self}/src";
-      nativeBuildInputs = dev-shell-packages; # TODO be more discriminating in nativeBuildInputs
+      nativeBuildInputs = [ nain4.packages.nain4 ];
     };
 
     # Executed by `nix run <URL of this flake> -- <args?>`
@@ -50,7 +49,7 @@
         export G4INCLDATA="${g4-data.G4INCL}/share/Geant4-11.0.4/data/G4INCL1.0"
         export G4ENSDFSTATEDATA="${g4-data.G4ENSDFSTATE}/share/Geant4-11.0.4/data/G4ENSDFSTATE2.3"
 
-        exec fluxdetector --macro-path ${self}/macs $*
+        exec fluxdetector --macro-path ${self}/macs "$@"
       '';
     in { type = "app"; program = "${wrap-fluxdetector}/bin/fluxdetector-wrapped"; };
 
