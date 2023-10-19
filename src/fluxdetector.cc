@@ -3,6 +3,7 @@
 
 #include <n4-main.hh>
 #include <n4-material.hh>
+#include <n4-sensitive.hh>
 #include <n4-shape.hh>
 #include <n4-inspect.hh>
 #include <n4-random.hh>

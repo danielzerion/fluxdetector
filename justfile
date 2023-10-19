@@ -6,8 +6,9 @@ test:
   just run --beam-on 10
 
 build:
-  cmake -S src -B build/app
-  cmake --build build/app
+  meson setup build/app src
+  meson compile -C build/app
+  meson install -C build/app
 
 run *ARGS: build
   #!/usr/bin/env sh
