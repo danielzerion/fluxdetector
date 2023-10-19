@@ -1,5 +1,7 @@
+#include "G4Types.hh"
 #include "my.hh"
 #include "materials.hh"
+#include "n4-place.hh"
 
 #include <n4-main.hh>
 #include <n4-material.hh>
@@ -75,7 +77,7 @@ auto PMT(const my& my) {
     .z(my.pmt_thickness).r(my.pmt_radius)
     .sensitive(sensitive_detector(my))
     .place(dummy_material)
-    .at_z((my.pmt_thickness-my.detector_length)/2);
+    .at_z((my.pmt_thickness-my.full_z())/2);
   return unnnumbered_pmt;
 }
 
@@ -84,10 +86,10 @@ auto my_generator(my& my) {
 
   return [&my](G4Event *event) {
     auto random_position_in_detector = [&my] {
-      auto [x, z] = n4::random::random_on_disc(my.detector_radius);
+      auto [x, z] = n4::random::random_on_disc(my.d2o_r);
       auto y      = n4::random::uniform(
-        -my.detector_length / 2,
-         my.detector_length / 2
+        -my.d2o_z / 2,
+         my.d2o_z / 2
       );
       return G4ThreeVector{x, y, z};
     };
@@ -112,6 +114,9 @@ n4::actions* create_actions(my& my, unsigned& n_event) {
 
   auto my_event_action = [&] (const G4Event*) {
      n_event++;
+     G4double TotEnrgy = 0.;
+     for (auto e:PMTEnergy) {TotEnrgy+=e;}
+     std::cout << "Total Energy "  << TotEnrgy/eV << std::endl; 
      std::cout << "end of event " << n_event << std::endl;
   };
 
@@ -125,36 +130,51 @@ auto my_geometry(const my& my) {
 
   auto D2O = d2o_csi_hybrid_FIXME_with_properties(my.scint_yield);
 
-  auto air    = air_with_properties();
-  auto Al     = n4::material("G4_Al");
-  auto teflon = teflon_with_properties();
-  auto world  = n4::box("World").cube(my.lab_size).volume(air);
-
-  auto vessel = n4::tubs("Vessel")
-    .r(my.detector_radius + my.vessel_thickness + my.teflon_thickness)
-    .z(my.detector_length + my.vessel_thickness + my.teflon_thickness)
+  auto air     = air_with_properties();
+  auto Al      = n4::material("G4_Al");
+  auto teflon  = teflon_with_properties();
+  auto H2O     = n4::material("G4_WATER");
+  auto acrylic = n4::material("G4_PLEXIGLASS");
+  n4::place::check_overlaps_switch_on();
+  auto world   = n4::box("World").cube(my.lab_size).volume(air);
+ 
+  auto vessel_out = n4::tubs("Vessel")
+    .r(my.full_r())
+    .z(my.full_z())
     .place(Al)
-    .in(world).at_z((my.vessel_thickness+my.teflon_thickness)/2).rotate_x(90*deg).now();
+    .in(world).rotate_x(90*deg).now();
 
   auto reflector = n4::tubs("Reflector")
-    .r(my.detector_radius + my.teflon_thickness)
-    .z(my.detector_length + my.teflon_thickness)
+    .r(my.d2o_r +   my.vessel_in_r_delta +   my.h2o_r_delta + my.teflon_delta)
+    .z(my.d2o_z + 2*my.vessel_in_z_delta + 2*my.h2o_z_delta + my.teflon_delta)
     .place(teflon)
-    .in(vessel).at_z(-my.vessel_thickness/2).now();
+    .in(vessel_out).now();
 
   auto water = n4::tubs("Water")
-    .r(my.detector_radius)
-    .z(my.detector_length)
-    .place(D2O)
-    .in(reflector).at_z(-my.teflon_thickness/2).now();
+    .r(my.d2o_r +   my.vessel_in_r_delta +   my.h2o_r_delta )
+    .z(my.d2o_z + 2*my.vessel_in_z_delta + 2*my.h2o_z_delta )
+    .place(H2O)
+    .in(reflector).at_z(-my.teflon_delta/2).now();
 
-  auto one_pmt = PMT(my).in(water);
+  auto vessel_in = n4::tubs("Acrylic")
+    .r(my.d2o_r +   my.vessel_in_r_delta )
+    .z(my.d2o_z + 2*my.vessel_in_z_delta )
+    .place(acrylic)    
+    .in(water).now();
+
+  auto heavywater = n4::tubs("Heavywater")
+    .r(my.d2o_r)
+    .z(my.d2o_z)
+    .place(D2O)
+    .in(vessel_in).now();
+
+  auto one_pmt = PMT(my).in(vessel_out);
 
   n4::place(one_pmt).copy_no(0).now();
   for (int i=1; i<7; i++) {
     auto margin = my.pmt_radius / 20;
     auto theta = CLHEP::pi * i / 3;
-    auto r = my.detector_radius - my.pmt_radius - margin;
+    auto r = my.full_r() - my.vessel_out_delta - my.pmt_radius - margin;
     n4::place(one_pmt).copy_no(i).at_x(r * cos(theta)).at_y(r * sin(theta)).now();
   }
 

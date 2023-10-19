@@ -62,6 +62,8 @@
 /vis/geometry/set/visibility      Vessel         0       true
 /vis/geometry/set/visibility      Reflector      0       true
 /vis/geometry/set/visibility      Water          0       true
+/vis/geometry/set/visibility      Acrylic        0       true
+/vis/geometry/set/visibility      Heavywater     0       true
 /vis/geometry/set/visibility      PMT            0       true
 
 #                        name     depth red green blue opacity
@@ -69,6 +71,8 @@
 /vis/geometry/set/colour Vessel     0   .7   .7   .7     .3
 /vis/geometry/set/colour Reflector  0    0    1    0     .3
 /vis/geometry/set/colour Water      0    1    0    0     .3
+/vis/geometry/set/colour Acrylic    0   .5    0   .6     .3
+/vis/geometry/set/colour Heavywater 0    1    0   .4     .3
 /vis/geometry/set/colour PMT        0    1    1    0     .3
 
 # Two different rendering options

@@ -34,7 +34,7 @@ G4Material* d2o_csi_hybrid_FIXME_with_properties(G4double scint_yield) {
     auto csi_energies      = n4::const_over(c4::hc/nm, {550 , 360, 300, 260}); // wavelengths in nanometers
     auto csi_energies_cold = n4::const_over(c4::hc/nm, {500 , 400, 350, 270}); // wavelengths in nanometers
     auto csi_scint         = std::vector<G4double>     {0.0 , 0.1, 1.0, 0.0};
-    auto csi_rindex        =                            1.79;
+    auto csi_rindex        =                            1.328;  
     auto csi_abslength     =                            5*m ;
 
     // Values from "Temperature dependence of pure CsI: scintillation
