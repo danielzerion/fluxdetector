@@ -2,7 +2,7 @@
   description = "Heavy water detector for European Spallation Source";
 
   inputs = {
-    nain4  .url     = "github:jacg/nain4?ref=v0.2.0";
+    nain4  .url     = "github:jacg/nain4";
     nosys  .follows = "nain4/nosys";
     nixpkgs.follows = "nain4/nixpkgs";
   };
