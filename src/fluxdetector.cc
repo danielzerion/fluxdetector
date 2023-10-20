@@ -36,15 +36,13 @@ std::array <G4int,7> PMTCount;
 n4::sensitive_detector* sensitive_detector(const my& my) {
   auto photon = n4::find_particle("opticalphoton");
   // `process_hits` is a mandatory method of `sensitive_detector`
-  auto process_hits = [&my, photon](G4Step* step) {
+  auto process_hits = [photon](G4Step* step) {
     auto track = step -> GetTrack();
     track -> SetTrackStatus(fStopAndKill);
 
     auto pre      = step -> GetPreStepPoint();
     auto copy_nb  = pre  -> GetTouchable() -> GetCopyNumber();
-    auto time     = pre  -> GetGlobalTime();
     auto momentum = pre  -> GetMomentum();
-    auto energy   = momentum.mag();
     auto particle = track -> GetParticleDefinition();
 
     if (particle == photon) {
@@ -56,11 +54,11 @@ n4::sensitive_detector* sensitive_detector(const my& my) {
   };
 
   // Optional methods of `sensitive_detector`
-  auto init = [&my] (G4HCofThisEvent*) {
+  auto init = [&] (G4HCofThisEvent*) {
     for (auto& e:PMTEnergy){e=0;}
     for (auto& f:PMTCount) {f=0;}
   };
-  auto end  = [&my] (G4HCofThisEvent*) {
+  auto end  = [&] (G4HCofThisEvent*) {
     for (auto& e:PMTEnergy) {std::cout << e/eV << ", ";};
     for (auto& f:PMTCount)  {std::cout << f    << ", ";}; 
     std::cout << std::endl;
