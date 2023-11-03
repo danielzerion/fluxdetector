@@ -131,8 +131,8 @@ auto my_geometry(const my& my) {
   auto air     = air_with_properties();
   auto Al      = n4::material("G4_Al");
   auto teflon  = teflon_with_properties();
-  auto H2O     = n4::material("G4_WATER");
-  auto acrylic = n4::material("G4_PLEXIGLASS");
+  auto H2O     = h2o_with_properties();
+  auto acrylic = acrylic_with_properties();
   n4::place::check_overlaps_switch_on();
   auto world   = n4::box("World").cube(my.lab_size).volume(air);
  
@@ -165,6 +165,8 @@ auto my_geometry(const my& my) {
     .z(my.d2o_z)
     .place(D2O)
     .in(vessel_in).now();
+
+  place_D2O_teflon_border_surface_between(water, reflector);
 
   auto one_pmt = PMT(my).in(vessel_out);
 

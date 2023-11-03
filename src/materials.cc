@@ -1,4 +1,5 @@
 #include "materials.hh"
+#include "G4Material.hh"
 
 #include <n4-material.hh>
 #include <n4-utils.hh>
@@ -22,6 +23,30 @@ auto D2O_without_properties() {
     {.state=kStateLiquid, .temp=293.15*kelvin, .pressure = 1*atmosphere},
     {{D, 2}, {"O", 1}});
 }
+
+G4Material * acrylic_with_properties() {
+  auto acrylic  = n4::material("G4_PLEXIGLASS");
+  auto energies = n4::const_over(c4::hc/nm, {550 , 360, 300, 260}); // wavelengths in nanometers
+  G4MaterialPropertiesTable * props = n4::material_properties()
+    .add("RINDEX"    , energies, 1.5) //TO DO FIND EXACT REF INDEX VALUES INSTEAD OF 1.5
+    .add("ABSLENGTH" , energies, 1*m  ) //TO DO FIND EXACT VALUE OF ABS LENGHT
+    .done();
+  acrylic -> SetMaterialPropertiesTable(props);
+  return acrylic;
+}
+
+
+G4Material * h2o_with_properties() {
+  auto h2o  = n4::material("G4_WATER");
+  auto energies = n4::const_over(c4::hc/nm, {550 , 360, 300, 260}); // wavelengths in nanometers
+  G4MaterialPropertiesTable * props = n4::material_properties()
+    .add("RINDEX"    , energies, 1.3) //TO DO FIND EXACT REF INDEX VALUES INSTEAD OF 1.5
+    .add("ABSLENGTH" , energies, 5*m  ) //TO DO FIND EXACT VALUE OF ABS LENGHT
+    .done();
+  h2o -> SetMaterialPropertiesTable(props);
+  return h2o;
+}
+
 
 // TODO: this gives us an idea of what is likely to be needed for D2O
 G4Material* d2o_csi_hybrid_FIXME_with_properties(G4double scint_yield) {
