@@ -5,16 +5,6 @@
 }: let
   inherit (nixpkgs.legacyPackages) pkgs;
 
-
-  # TODO inject nain4 itself into most of these:
-
-  dev-shell-packages = with nain4;
-    [ nain4.packages.nain4 ] ++
-    deps.dev ++ deps.build-prop ++ deps.test ++ deps.run-prop
-    ++ pkgs.lib.optionals pkgs.stdenv.isDarwin []
-    ++ pkgs.lib.optionals pkgs.stdenv.isLinux  []
-  ;
-
   in {
 
     packages.default = self.packages.fluxdetector;
@@ -62,24 +52,14 @@
     # Activated by `nix develop <URL to this flake>#clang`
     devShells.clang = pkgs.mkShell.override { stdenv = nain4.packages.clang_16.stdenv; } {
       name = "my-nain4-app-clang-devenv";
-
-      packages = dev-shell-packages ++ [
-        nain4.packages.nain4
-        nain4.packages.clang_16
-      ];
+      packages = nain4.deps.dev-shell-packages ++ [ nain4.packages.clang_16 ];
     };
 
     # Activated by `nix develop <URL to this flake>#gcc`
-    # devShells.gcc = pkgs.mkShell {
-    #   name = "my-nain4-app-gcc-devenv";
-
-    #   packages = dev-shell-packages;
-
-    #   G4_DIR = "${pkgs.geant4}";
-    #   G4_EXAMPLES_DIR = "${pkgs.geant4}/share/Geant4-11.0.4/examples/";
-    #   QT_QPA_PLATFORM_PLUGIN_PATH="${pkgs.libsForQt5.qt5.qtbase.bin}/lib/qt-${pkgs.libsForQt5.qt5.qtbase.version}/plugins";
-
-    # };
+    devShells.gcc = pkgs.mkShell {
+      name = "my-nain4-app-gcc-devenv";
+      packages = nain4.deps.dev-shell-packages;
+    };
 
     # 1. `nix build` .#singularity
     # 2. `scp result <me>@lxplus7.cern.ch:hello.img`
